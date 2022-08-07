@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +16,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', 'login');
 
-Route::resource('products',
-    \App\Http\Controllers\ProductController::class)->middleware('auth');
+Route::middleware('auth')->group(function() {
+    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+
+    Route::middleware('is_admin')->group(function() {
+        Route::get('products/create', [ProductController::class, 'create'])
+            ->name('products.create');
+        Route::post('products', [ProductController::class, 'store'])
+            ->name('products.store');
+    });
+});
 
 require __DIR__.'/auth.php';

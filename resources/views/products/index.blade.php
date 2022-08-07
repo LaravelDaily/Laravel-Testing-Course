@@ -10,6 +10,11 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="overflow-hidden overflow-x-auto p-6 bg-white border-b border-gray-200">
                     <div class="min-w-full align-middle">
+                        @if (auth()->user()->is_admin)
+                            <a href="{{ route('products.create') }}" class="mb-4 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                Add new product</a>
+                        @endif
+
                         <table class="min-w-full divide-y divide-gray-200 border">
                             <thead>
                             <tr>
