@@ -28,6 +28,8 @@ Route::middleware('auth')->group(function() {
             ->name('products.edit');
         Route::put('products/{product}', [ProductController::class, 'update'])
             ->name('products.update');
+        Route::delete('products/{product}', [ProductController::class, 'destroy'])
+            ->name('products.destroy');
     });
 });
 
