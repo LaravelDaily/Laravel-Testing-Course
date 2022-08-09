@@ -11,7 +11,10 @@
 |
 */
 
-uses(Tests\TestCase::class)->in('Feature');
+use App\Models\User;
+
+uses(Tests\TestCase::class,
+    \Illuminate\Foundation\Testing\RefreshDatabase::class)->in('Feature');
 
 /*
 |--------------------------------------------------------------------------
@@ -39,7 +42,9 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function createUser(bool $isAdmin = false): User
 {
-    // ..
+    return User::factory()->create([
+        'is_admin' => $isAdmin
+    ]);
 }
