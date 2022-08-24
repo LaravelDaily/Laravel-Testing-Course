@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth', ['only' => ['destroy']]);
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -28,5 +33,12 @@ class ProductController extends Controller
     public function store(StoreProductRequest $request)
     {
         return Product::create($request->validated());
+    }
+
+    public function destroy(Product $product)
+    {
+        $product->delete();
+
+        return response()->noContent();
     }
 }
