@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Product;
 use App\Models\User;
+use App\Services\ProductService;
+use Brick\Math\Exception\NumberFormatException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -216,6 +218,22 @@ class ProductsTest extends TestCase
         $response = $this->deleteJson('/api/products/' . $product->id);
 
         $response->assertUnauthorized();
+    }
+
+    public function test_product_service_create_returns_product()
+    {
+        $product = (new ProductService())->create('Test product', 1234);
+
+        $this->assertInstanceOf(Product::class, $product);
+    }
+
+    public function test_product_service_create_validation()
+    {
+        try {
+            (new ProductService())->create('Too big', 1234567);
+        } catch (\Exception $e) {
+            $this->assertInstanceOf(NumberFormatException::class, $e);
+        }
     }
 
     private function createUser(bool $isAdmin = false): User
