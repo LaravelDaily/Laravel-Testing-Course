@@ -171,10 +171,15 @@ class ProductsTest extends TestCase
 
     public function test_api_returns_products_list()
     {
-        $product = Product::factory()->create();
+        $product1 = Product::factory()->create();
+        $product2 = Product::factory()->create();
         $response = $this->getJson('/api/products');
 
-        $response->assertJson([$product->toArray()]);
+        $response->assertJsonFragment([
+            'name' => $product1->name,
+            'price' => $product1->price
+        ]);
+        $response->assertJsonCount(2, 'data');
     }
 
     public function test_api_product_store_successful()
@@ -199,6 +204,45 @@ class ProductsTest extends TestCase
         $response = $this->postJson('/api/products', $product);
 
         $response->assertUnprocessable();
+        $response->assertJsonMissingValidationErrors('price');
+        $response->assertInvalid('name');
+    }
+
+    public function test_api_product_show_successful()
+    {
+        $productData = [
+            'name' => 'Product 1',
+            'price' => 123
+        ];
+        $product = Product::create($productData);
+
+        $response = $this->getJson('/api/products/' . $product->id);
+        $response->assertOk();
+        $response->assertJsonPath('data.name', $productData['name']);
+        $response->assertJsonMissingPath('data.created_at');
+        $response->assertJsonStructure([
+            'data' => [
+                'id',
+                'name',
+                'price',
+            ]
+        ]);
+    }
+
+    public function test_api_product_update_successful()
+    {
+        $productData = [
+            'name' => 'Product 1',
+            'price' => 123
+        ];
+        $product = Product::create($productData);
+
+        $response = $this->putJson('/api/products/' . $product->id, [
+            'name' => 'Product updated',
+            'price' => 1234
+        ]);
+        $response->assertOk();
+        $response->assertJsonMissing($productData);
     }
 
     public function test_api_product_delete_logged_in_admin()
