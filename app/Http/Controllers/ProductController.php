@@ -76,4 +76,9 @@ class ProductController extends Controller
 
         return redirect()->route('products.index');
     }
+
+    public function download()
+    {
+        return response()->download(public_path('files/product-specification.pdf'));
+    }
 }

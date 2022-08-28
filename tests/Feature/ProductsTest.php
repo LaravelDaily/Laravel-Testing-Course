@@ -134,6 +134,11 @@ class ProductsTest extends TestCase
     public function test_product_edit_contains_correct_values()
     {
         $product = Product::factory()->create();
+        $this->assertDatabaseHas('products', [
+            'name' => $product->name,
+            'price' => $product->price
+        ]);
+        $this->assertModelExists($product);
 
         $response = $this->actingAs($this->admin)->get('products/' . $product->id . '/edit');
 
@@ -166,6 +171,7 @@ class ProductsTest extends TestCase
         $response->assertRedirect('products');
 
         $this->assertDatabaseMissing('products', $product->toArray());
+        $this->assertModelMissing($product);
         $this->assertDatabaseCount('products', 0);
     }
 
@@ -279,6 +285,15 @@ class ProductsTest extends TestCase
             $this->assertInstanceOf(NumberFormatException::class, $e);
         }
     }
+
+    public function test_download_product_success()
+    {
+        $response = $this->get('/download');
+        $response->assertOk();
+        $response->assertHeader('Content-Disposition',
+            'attachment; filename=product-specification.pdf');
+    }
+
 
     private function createUser(bool $isAdmin = false): User
     {

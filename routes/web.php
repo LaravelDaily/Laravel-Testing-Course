@@ -15,6 +15,7 @@ use App\Http\Controllers\ProductController;
 */
 
 Route::redirect('/', 'login');
+Route::get('download', [ProductController::class, 'download']);
 
 Route::middleware('auth')->group(function() {
     Route::get('products', [ProductController::class, 'index'])->name('products.index');
