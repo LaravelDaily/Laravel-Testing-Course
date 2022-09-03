@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Exceptions\CurrencyRateNotFoundException;
 use App\Services\CurrencyService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +16,12 @@ class Product extends Model
 
     public function getPriceEurAttribute()
     {
-        return (new CurrencyService())->convert($this->price, 'usd', 'eur');
+        try {
+            return (new CurrencyService())->convert($this->price, 'usd', 'eur');
+        } catch (CurrencyRateNotFoundException $ex) {
+            // Log something, alert someone
+            return 0;
+        }
     }
 
     public function scopePublished(Builder $query): Builder
