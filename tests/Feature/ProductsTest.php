@@ -294,6 +294,21 @@ class ProductsTest extends TestCase
             'attachment; filename=product-specification.pdf');
     }
 
+    public function test_product_shows_when_published_at_correct_time()
+    {
+        $product = Product::factory()->create([
+            'published_at' => now()->addDay()->setTime(14, 00),
+        ]);
+
+        $this->freezeTime(function () use ($product) {
+            $this->travelTo(now()->addDay()->setTime(14, 01));
+            $response = $this->actingAs($this->user)->get('products');
+            $response->assertSeeText($product->name);
+        });
+
+        $response = $this->actingAs($this->user)->get('/products');
+        $response->assertDontSeeText($product->name);
+    }
 
     private function createUser(bool $isAdmin = false): User
     {
