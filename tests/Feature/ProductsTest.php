@@ -124,11 +124,14 @@ class ProductsTest extends TestCase
         $response->assertStatus(302);
         $response->assertRedirect('products');
 
-        $this->assertDatabaseHas('products', $product);
+        $this->assertDatabaseHas('products', [
+            'name' => 'Product 123',
+            'price' => 123400
+        ]);
 
         $lastProduct = Product::latest()->first();
         $this->assertEquals($product['name'], $lastProduct->name);
-        $this->assertEquals($product['price'], $lastProduct->price);
+        $this->assertEquals($product['price'] * 100, $lastProduct->price);
     }
 
     public function test_product_edit_contains_correct_values()
@@ -198,7 +201,10 @@ class ProductsTest extends TestCase
 
         $response->assertCreated();
         $response->assertSuccessful(); // but not assertOk()
-        $response->assertJson($product);
+        $response->assertJson([
+            'name' => 'Product 1',
+            'price' => 12300
+        ]);
     }
 
     public function test_api_product_invalid_store_returns_error()
