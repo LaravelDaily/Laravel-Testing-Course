@@ -310,6 +310,13 @@ class ProductsTest extends TestCase
 //        $response->assertDontSeeText($product->name);
     }
 
+    public function test_artisan_publish_command_successful()
+    {
+        $this->artisan('product:publish 1')
+            ->assertExitCode(-1)
+            ->expectsOutput('Product not found');
+    }
+
     private function createUser(bool $isAdmin = false): User
     {
         return User::factory()->create([
