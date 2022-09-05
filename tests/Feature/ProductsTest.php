@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Models\User;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,17 +12,6 @@ use Tests\TestCase;
 class ProductsTest extends TestCase
 {
     use RefreshDatabase;
-
-    private User $user;
-    private User $admin;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->user = $this->createUser();
-        $this->admin = $this->createUser(isAdmin: true);
-    }
 
     public function test_homepage_contains_empty_table()
     {
@@ -119,10 +107,10 @@ class ProductsTest extends TestCase
             'name' => 'Product 123',
             'price' => 1234
         ];
-        $response = $this->actingAs($this->admin)->post('/products', $product);
+        $response = $this->followingRedirects()->actingAs($this->admin)->post('/products', $product);
 
-        $response->assertStatus(302);
-        $response->assertRedirect('products');
+        $response->assertStatus(200);
+        $response->assertSeeText($product['name']);
 
         $this->assertDatabaseHas('products', [
             'name' => 'Product 123',
@@ -321,12 +309,5 @@ class ProductsTest extends TestCase
         $this->artisan('product:publish 1')
             ->assertExitCode(-1)
             ->expectsOutput('Product not found');
-    }
-
-    private function createUser(bool $isAdmin = false): User
-    {
-        return User::factory()->create([
-            'is_admin' => $isAdmin
-        ]);
     }
 }
