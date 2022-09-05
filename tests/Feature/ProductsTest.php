@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\ProductPublishJob;
 use App\Models\Product;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
@@ -309,5 +310,16 @@ class ProductsTest extends TestCase
         $this->artisan('product:publish 1')
             ->assertExitCode(-1)
             ->expectsOutput('Product not found');
+    }
+
+    public function test_job_product_publish_successful()
+    {
+        $product = Product::factory()->create();
+        $this->assertNull($product->published_at);
+
+        (new ProductPublishJob(2))->handle();
+
+        $product->refresh();
+        $this->assertNotNull($product->published_at);
     }
 }
