@@ -1,0 +1,1 @@
+New product: {{ $product->name }}

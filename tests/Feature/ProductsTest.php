@@ -4,13 +4,17 @@ namespace Tests\Feature;
 
 use App\Jobs\NewProductNotifyJob;
 use App\Jobs\ProductPublishJob;
+use App\Mail\NewProductCreated;
 use App\Models\Product;
+use App\Notifications\NewProductCreatedNotification;
 use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -204,6 +208,24 @@ class ProductsTest extends TestCase
         $response->assertStatus(200);
 
         Bus::assertDispatched(NewProductNotifyJob::class);
+    }
+
+    public function test_product_create_mail_sent_successfully()
+    {
+        Mail::fake();
+        Notification::fake();
+
+        $product = [
+            'name' => 'Product 123',
+            'price' => 1234,
+        ];
+        $response = $this->followingRedirects()->actingAs($this->admin)->post('/products', $product);
+
+        $response->assertStatus(200);
+
+        // ??? assert
+        Mail::assertSent(NewProductCreated::class);
+        Notification::assertSentTo($this->admin, NewProductCreatedNotification::class);
     }
 
     public function test_api_returns_products_list()

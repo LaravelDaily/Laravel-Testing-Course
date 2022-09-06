@@ -2,13 +2,18 @@
 
 namespace App\Jobs;
 
+use App\Mail\NewProductCreated;
 use App\Models\Product;
+use App\Models\User;
+use App\Notifications\NewProductCreatedNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 
 class NewProductNotifyJob implements ShouldQueue
 {
@@ -30,6 +35,9 @@ class NewProductNotifyJob implements ShouldQueue
      */
     public function handle()
     {
-        info('Sending notification to everyone about ' . $this->product->name);
+        $admin = User::where('is_admin', 1)->first();
+        Mail::to($admin->email)->send(new NewProductCreated($this->product));
+
+        Notification::send($admin, new NewProductCreatedNotification($this->product));
     }
 }
