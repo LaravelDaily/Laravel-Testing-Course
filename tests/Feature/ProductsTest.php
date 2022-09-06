@@ -8,6 +8,8 @@ use App\Services\ProductService;
 use Brick\Math\Exception\NumberFormatException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProductsTest extends TestCase
@@ -167,6 +169,26 @@ class ProductsTest extends TestCase
         $this->assertDatabaseCount('products', 0);
     }
 
+    public function test_product_create_photo_upload_successful()
+    {
+        Storage::fake();
+        $filename = 'photo1.jpg';
+
+        $product = [
+            'name' => 'Product 123',
+            'price' => 1234,
+            'photo' => UploadedFile::fake()->image($filename), // ???
+        ];
+        $response = $this->followingRedirects()->actingAs($this->admin)->post('/products', $product);
+
+        $response->assertStatus(200);
+
+        $lastProduct = Product::latest()->first();
+        $this->assertEquals($filename, $lastProduct->photo);
+
+        Storage::assertExists('products/' . $filename);
+    }
+
     public function test_api_returns_products_list()
     {
         $product1 = Product::factory()->create();
@@ -317,7 +339,7 @@ class ProductsTest extends TestCase
         $product = Product::factory()->create();
         $this->assertNull($product->published_at);
 
-        (new ProductPublishJob(2))->handle();
+        (new ProductPublishJob(1))->handle();
 
         $product->refresh();
         $this->assertNotNull($product->published_at);

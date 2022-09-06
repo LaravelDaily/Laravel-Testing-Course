@@ -34,7 +34,13 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
-        Product::create($request->validated());
+        $product = Product::create($request->validated());
+
+        if ($request->hasFile('photo')) {
+            $filename = $request->file('photo')->getClientOriginalName();
+            $request->file('photo')->storeAs('products', $filename);
+            $product->update(['photo' => $filename]);
+        }
 
         return redirect()->route('products.index');
     }
