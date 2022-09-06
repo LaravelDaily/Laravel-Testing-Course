@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Jobs\NewProductNotifyJob;
 use App\Jobs\ProductPublishJob;
 use App\Models\Product;
 use App\Services\ProductService;
@@ -9,6 +10,7 @@ use Brick\Math\Exception\NumberFormatException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -187,6 +189,21 @@ class ProductsTest extends TestCase
         $this->assertEquals($filename, $lastProduct->photo);
 
         Storage::assertExists('products/' . $filename);
+    }
+
+    public function test_product_create_job_notification_dispatched_successfully()
+    {
+        Bus::fake();
+
+        $product = [
+            'name' => 'Product 123',
+            'price' => 1234,
+        ];
+        $response = $this->followingRedirects()->actingAs($this->admin)->post('/products', $product);
+
+        $response->assertStatus(200);
+
+        Bus::assertDispatched(NewProductNotifyJob::class);
     }
 
     public function test_api_returns_products_list()
