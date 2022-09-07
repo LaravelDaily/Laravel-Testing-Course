@@ -8,6 +8,7 @@ use App\Mail\NewProductCreated;
 use App\Models\Product;
 use App\Notifications\NewProductCreatedNotification;
 use App\Services\ProductService;
+use App\Services\YouTubeService;
 use Brick\Math\Exception\NumberFormatException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -226,6 +227,24 @@ class ProductsTest extends TestCase
         // ??? assert
         Mail::assertSent(NewProductCreated::class);
         Notification::assertSentTo($this->admin, NewProductCreatedNotification::class);
+    }
+
+    public function test_product_create_with_youtube_service()
+    {
+        $this->mock(YouTubeService::class)
+            ->shouldReceive('getThumbnailByID')
+            ->with('5XywKLjCD3g')
+            ->once()
+            ->andReturn('https://i.ytimg.com/vi/5XywKLjCD3g/default.jpg');
+
+        $product = [
+            'name' => 'Product 123',
+            'price' => 1234,
+            'youtube_id' => '5XywKLjCD3g',
+        ];
+        $response = $this->followingRedirects()->actingAs($this->admin)->post('/products', $product);
+
+        $response->assertStatus(200);
     }
 
     public function test_api_returns_products_list()

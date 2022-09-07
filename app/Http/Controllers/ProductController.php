@@ -6,6 +6,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Jobs\NewProductNotifyJob;
 use App\Models\Product;
+use App\Services\YouTubeService;
 use Illuminate\View\View;
 
 class ProductController extends Controller
@@ -33,15 +34,21 @@ class ProductController extends Controller
      * @param  \App\Http\Requests\StoreProductRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreProductRequest $request)
+    public function store(StoreProductRequest $request, YouTubeService $youTubeService)
     {
-        $product = Product::create($request->validated());
+        $productData = $request->validated();
+
+        if ($request->youtube_id) {
+            $productData['youtube_thumbnail'] = $youTubeService->getThumbnailByID($request->youtube_id);
+        }
 
         if ($request->hasFile('photo')) {
             $filename = $request->file('photo')->getClientOriginalName();
             $request->file('photo')->storeAs('products', $filename);
-            $product->update(['photo' => $filename]);
+            $productData['photo'] = $filename;
         }
+
+        $product = Product::create($productData);
 
         NewProductNotifyJob::dispatch($product);
 

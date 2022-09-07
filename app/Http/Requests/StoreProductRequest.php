@@ -26,6 +26,7 @@ class StoreProductRequest extends FormRequest
         return [
             'name' => 'required',
             'price' => 'required',
+            'youtube_id' => 'nullable',
         ];
     }
 }
